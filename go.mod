@@ -1,4 +1,4 @@
-module github.com/zyguan/test-util
+module github.com/zyguan/tidb-test-util
 
 go 1.15
 

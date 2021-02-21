@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/zyguan/test-util/cmd/stmtflow/command"
+	"github.com/zyguan/tidb-test-util/cmd/stmtflow/command"
 )
 
 func init() {

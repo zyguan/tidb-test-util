@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/zyguan/sqlz/stmtflow"
-	"github.com/zyguan/test-util/cmd/stmtflow/core"
+	"github.com/zyguan/tidb-test-util/cmd/stmtflow/core"
 )
 
 func Play(c *CommonOptions) *cobra.Command {
