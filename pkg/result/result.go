@@ -129,7 +129,7 @@ func (r *Result) mergeEnvLabels() {
 			continue
 		}
 		kv := strings.SplitN(env, "=", 2)
-		r.Labels[kv[0]] = kv[1]
+		r.Labels[strings.TrimPrefix(kv[0], EnvTestLabelPrefix)] = kv[1]
 	}
 }
 
