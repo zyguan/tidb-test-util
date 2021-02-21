@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -77,7 +78,22 @@ func newMockStore() *mockResultStore {
 	return &store
 }
 
+func cleanup() {
+	os.Unsetenv(EnvTestName)
+	os.Unsetenv(EnvTestResultID)
+	os.Unsetenv(EnvTestStoreEndpoint)
+	for _, env := range os.Environ() {
+		if !strings.HasPrefix(env, EnvTestLabelPrefix) {
+			continue
+		}
+		kv := strings.SplitN(env, "=", 2)
+		os.Unsetenv(kv[0])
+	}
+	testStoreEndpoint = ""
+}
+
 func TestInitDefault(t *testing.T) {
+	cleanup()
 	store := newMockStore()
 	server := httptest.NewServer(store)
 	defer server.Close()
@@ -105,6 +121,7 @@ func TestInitDefault(t *testing.T) {
 }
 
 func TestResultReport(t *testing.T) {
+	cleanup()
 	store := newMockStore()
 	server := httptest.NewServer(store)
 	defer server.Close()
@@ -112,7 +129,7 @@ func TestResultReport(t *testing.T) {
 	defaultResult = nil
 
 	t.Run("Uninitialized", func(t *testing.T) {
-		require.Error(t, Report(Unknown, ""))
+		require.EqualError(t, Report(Unknown, ""), "default result is nil")
 	})
 
 	r, err := InitDefault()
@@ -123,7 +140,7 @@ func TestResultReport(t *testing.T) {
 	t.Run("EmptyEndpoint", func(t *testing.T) {
 		err := Report(Unknown, "")
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "empty endpoint")
+		require.True(t, isEmptyEndpointError(err))
 	})
 
 	testStoreEndpoint = server.URL

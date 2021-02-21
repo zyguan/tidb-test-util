@@ -27,7 +27,7 @@ type Result struct {
 	ID          string            `json:"id,omitempty"`
 	Name        string            `json:"schedID,omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
-	StartedAt   int64             `json:"startedA,omitemptyt"`
+	StartedAt   int64             `json:"startedAt,omitemptyt"`
 	CompletedAt int64             `json:"completedAt,omitempty"`
 	Conclusion  Conclusion        `json:"conclusion,omitempty"`
 	Output      string            `json:"output,omitempty"`
@@ -79,7 +79,11 @@ func (r *Result) Report(conclusion Conclusion, output string) error {
 	r.Output = output
 	err := r.Update()
 	if err != nil {
-		L.Error(err, "update result", "instance", r)
+		if isEmptyEndpointError(err) {
+			L.V(1).Info(err.Error())
+		} else {
+			L.Error(err, "update result", "instance", r)
+		}
 	}
 	return err
 }
@@ -142,4 +146,11 @@ func makeURL(path string) string {
 		return ""
 	}
 	return endpoint + path
+}
+
+func isEmptyEndpointError(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), "empty endpoint")
 }
