@@ -125,6 +125,12 @@ func (r *Result) Update() error {
 }
 
 func (r *Result) mergeEnvLabels() {
+	if labels, ok := os.LookupEnv(EnvTestLabels); ok {
+		err := json.Unmarshal([]byte(labels), &r.Labels)
+		if err != nil {
+			L.Error(err, "invalid format of labels", "labels", labels)
+		}
+	}
 	if r.Labels == nil {
 		r.Labels = make(map[string]string)
 	}
