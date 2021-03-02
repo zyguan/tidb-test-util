@@ -53,8 +53,9 @@ func Test(c *CommonOptions) *cobra.Command {
 					if repeat < t.Repeat {
 						repeat = t.Repeat
 					}
+					var db *sql.DB
 					for i := 0; i < repeat; i++ {
-						db, err := c.OpenDB()
+						db, err = c.OpenDB()
 						if err != nil {
 							return err
 						}
