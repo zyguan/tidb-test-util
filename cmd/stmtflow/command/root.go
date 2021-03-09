@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"os"
 	"time"
 
@@ -10,6 +11,11 @@ import (
 	"github.com/zyguan/sqlz/stmtflow"
 
 	_ "github.com/go-sql-driver/mysql"
+)
+
+var (
+	Version   = "latest"
+	BuildTime = "none"
 )
 
 type CommonOptions struct {
@@ -54,6 +60,11 @@ func Root() *cobra.Command {
 	cmd.PersistentFlags().DurationVar(&opts.BlockTime, "block-time", 20*time.Second, "max time to wait a newly submitted statement")
 
 	cmd.AddCommand(AutoGen(), Play(&opts), Test(&opts))
+	cmd.AddCommand(&cobra.Command{
+		Use:   "version",
+		Short: "Show version information",
+		Run:   func(cmd *cobra.Command, args []string) { fmt.Printf("%s@%s (%s)\n", cmd.Use, Version, BuildTime) },
+	})
 
 	return cmd
 }

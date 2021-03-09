@@ -36,7 +36,7 @@ func Test(c *CommonOptions) *cobra.Command {
 			}
 			opts.EvalOptions = c.EvalOptions()
 			ctx := context.Background()
-			errCnt := 0
+			errCnt, skippedCnt := 0, 0
 			for _, path := range args {
 				log.Printf("[%s] load tests", path)
 				tests, err := core.Load(path, opts.Filter)
@@ -53,11 +53,20 @@ func Test(c *CommonOptions) *cobra.Command {
 					if repeat < t.Repeat {
 						repeat = t.Repeat
 					}
-					var db *sql.DB
+					var (
+						db      *sql.DB
+						skipped bool
+					)
 					for i := 0; i < repeat; i++ {
 						db, err = c.OpenDB()
 						if err != nil {
 							return err
+						}
+						err = validateTiDBVersion(db, t)
+						if err != nil {
+							db.Close()
+							skipped = true
+							break
 						}
 						err = testOne(c.WithTimeout(ctx), db, t, opts)
 						db.Close()
@@ -66,8 +75,13 @@ func Test(c *CommonOptions) *cobra.Command {
 						}
 					}
 					if err != nil {
-						log.Printf("[%s#%s] failed: %+v", path, t.Name, err)
-						errCnt += 1
+						if skipped {
+							log.Printf("[%s#%s] skipped: %v", path, t.Name, err)
+							skippedCnt += 1
+						} else {
+							log.Printf("[%s#%s] failed:  %+v", path, t.Name, err)
+							errCnt += 1
+						}
 					} else {
 						log.Printf("[%s#%s] passed", path, t.Name)
 					}
@@ -113,4 +127,20 @@ func testOne(ctx context.Context, db *sql.DB, test core.Test, opts testOptions) 
 	}
 	_ = core.LocalDiff(os.Stdout, test.Name, exp, buf.String(), strings.Split(opts.DiffCmd, " "))
 	return
+}
+
+func validateTiDBVersion(db *sql.DB, test core.Test) error {
+	if len(test.VersionConstraint) == 0 {
+		return nil
+	}
+	var ver string
+	err := db.QueryRow("select version()").Scan(&ver)
+	if err != nil {
+		return errors.Wrap(err, "query for version")
+	}
+	const verPrefix = "5.7.25-TiDB-"
+	if strings.HasPrefix(ver, verPrefix) {
+		ver = ver[len(verPrefix):]
+	}
+	return test.ValidateVersion(ver)
 }
