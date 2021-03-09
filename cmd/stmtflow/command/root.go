@@ -63,7 +63,7 @@ func Root() *cobra.Command {
 	cmd.AddCommand(&cobra.Command{
 		Use:   "version",
 		Short: "Show version information",
-		Run:   func(cmd *cobra.Command, args []string) { fmt.Printf("%s@%s (%s)\n", cmd.Use, Version, BuildTime) },
+		Run:   func(*cobra.Command, []string) { fmt.Printf("%s@%s (%s)\n", cmd.Use, Version, BuildTime) },
 	})
 
 	return cmd
