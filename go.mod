@@ -9,6 +9,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
-	github.com/zyguan/sqlz v0.0.0-20210309075353-c6e26b1ea94c
+	github.com/zyguan/sqlz v0.0.0-20210309141421-491a44ab6d63
 	k8s.io/klog/v2 v2.5.0
 )
