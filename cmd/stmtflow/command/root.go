@@ -59,7 +59,7 @@ func Root() *cobra.Command {
 	cmd.PersistentFlags().DurationVar(&opts.PingTime, "ping-time", 200*time.Millisecond, "max wait time to ping a blocked statement")
 	cmd.PersistentFlags().DurationVar(&opts.BlockTime, "block-time", 9*time.Second, "max time to wait a newly submitted statement")
 
-	cmd.AddCommand(AutoGen(), Play(&opts), Test(&opts))
+	cmd.AddCommand(AutoGen(), Play(&opts), Test(&opts), RandGen(&opts))
 	cmd.AddCommand(&cobra.Command{
 		Use:   "version",
 		Short: "Show version information",
