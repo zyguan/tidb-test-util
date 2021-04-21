@@ -90,7 +90,7 @@ func RandGen(c *CommonOptions) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&opts.caseName, "case_name", "sample_case", "case_name for the generated cases")
+	cmd.Flags().StringVarP(&opts.caseName, "case_name", "n", "sample_case", "case_name for the generated cases")
 	cmd.Flags().BoolVarP(&opts.withResults, "with_results", "r", false, "write to result file")
 	return cmd
 }
