@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	DropDBIfExistSQL = "/* init */ drop database if exists test;"
+	DropDBIfExistSQL      = "/* init */ drop database if exists test;"
 	CreateDBIfNotExistSQL = "/* init */ create database if not exists test;"
-	UseDBSQL = "/* init */ use test;"
+	UseDBSQL              = "/* init */ use test;"
 )
 
 type options struct {
@@ -90,7 +90,7 @@ func RandGen(c *CommonOptions) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.PersistentFlags().StringVar(&opts.caseName, "case_name", "sample_case", "case_name for the generated cases")
+	cmd.Flags().StringVar(&opts.caseName, "case_name", "sample_case", "case_name for the generated cases")
 	cmd.Flags().BoolVarP(&opts.withResults, "with_results", "r", false, "write to result file")
 	return cmd
 }
