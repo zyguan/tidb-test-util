@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/zyguan/tidb-test-util/pkg/env"
 )
 
 func TestSetLabelsByEnv(t *testing.T) {
@@ -17,8 +18,8 @@ func TestSetLabelsByEnv(t *testing.T) {
 		require.Empty(t, r1.Labels)
 	})
 
-	require.NoError(t, os.Setenv(EnvTestLabels, `{"hello":"world"}`))
-	require.NoError(t, os.Setenv(EnvTestLabelPrefix+"universe.answer", "42"))
+	require.NoError(t, os.Setenv(env.TestLabels, `{"hello":"world"}`))
+	require.NoError(t, os.Setenv(env.TestLabelPrefix+"universe.answer", "42"))
 
 	t.Run("WithEnv", func(t *testing.T) {
 		r2 := New("bar", nil)

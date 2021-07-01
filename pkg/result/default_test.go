@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/zyguan/tidb-test-util/pkg/env"
 )
 
 type mockResultStore struct {
@@ -79,17 +80,17 @@ func newMockStore() *mockResultStore {
 }
 
 func cleanup() {
-	os.Unsetenv(EnvTestName)
-	os.Unsetenv(EnvTestResultID)
-	os.Unsetenv(EnvTestStoreEndpoint)
-	for _, env := range os.Environ() {
-		if !strings.HasPrefix(env, EnvTestLabelPrefix) {
+	os.Unsetenv(env.TestName)
+	os.Unsetenv(env.TestResultID)
+	os.Unsetenv(env.TestResultEndpoint)
+	for _, kv := range os.Environ() {
+		if !strings.HasPrefix(kv, env.TestLabelPrefix) {
 			continue
 		}
-		kv := strings.SplitN(env, "=", 2)
+		kv := strings.SplitN(kv, "=", 2)
 		os.Unsetenv(kv[0])
 	}
-	testStoreEndpoint = ""
+	TestResultEndpoint = ""
 }
 
 func TestInitDefault(t *testing.T) {
@@ -99,9 +100,9 @@ func TestInitDefault(t *testing.T) {
 	defer server.Close()
 
 	defaultResult = nil
-	testStoreEndpoint = server.URL
+	TestResultEndpoint = server.URL
 
-	os.Setenv(EnvTestResultID, "foo")
+	os.Setenv(env.TestResultID, "foo")
 
 	t.Run("NotExists", func(t *testing.T) {
 		r, err := InitDefault()
@@ -143,7 +144,7 @@ func TestResultReport(t *testing.T) {
 		require.True(t, isEmptyEndpointError(err))
 	})
 
-	testStoreEndpoint = server.URL
+	TestResultEndpoint = server.URL
 
 	t.Run("ReportOk", func(t *testing.T) {
 		require.NoError(t, Report(Success, "ok"))

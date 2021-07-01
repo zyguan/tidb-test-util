@@ -10,6 +10,13 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/zyguan/tidb-test-util/pkg/env"
+	"github.com/zyguan/tidb-test-util/pkg/log"
+)
+
+var (
+	TestResultEndpoint = ""
+	HttpClient         = http.DefaultClient
 )
 
 type Conclusion string
@@ -52,7 +59,7 @@ func Get(id string) (*Result, error) {
 	if len(apiURL) == 0 {
 		return nil, errors.New("cannot get result from an empty endpoint")
 	}
-	resp, err := client.Get(apiURL)
+	resp, err := HttpClient.Get(apiURL)
 	if err != nil {
 		return nil, errors.Wrapf(err, "do request %s %s", http.MethodGet, apiURL)
 	}
@@ -80,9 +87,9 @@ func (r *Result) Report(conclusion Conclusion, output string) error {
 	err := r.Update()
 	if err != nil {
 		if isEmptyEndpointError(err) {
-			L.V(1).Info(err.Error())
+			log.Warnw("cannot report to an empty endpoint", "error", err)
 		} else {
-			L.Error(err, "update result", "instance", r)
+			log.Errorw("failed to update result", "result", r, "error", err)
 		}
 	}
 	return err
@@ -106,7 +113,7 @@ func (r *Result) Update() error {
 		return errors.Wrap(err, "create request")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(req)
+	resp, err := HttpClient.Do(req)
 	if err != nil {
 		return errors.Wrapf(err, "do request %s %s", method, apiURL)
 	}
@@ -125,29 +132,29 @@ func (r *Result) Update() error {
 }
 
 func (r *Result) mergeEnvLabels() {
-	if labels, ok := os.LookupEnv(EnvTestLabels); ok {
+	if labels, ok := os.LookupEnv(env.TestLabels); ok {
 		err := json.Unmarshal([]byte(labels), &r.Labels)
 		if err != nil {
-			L.Error(err, "invalid format of labels", "labels", labels)
+			log.Errorw("invalid format of labels", "labels", labels, "error", err)
 		}
 	}
 	if r.Labels == nil {
 		r.Labels = make(map[string]string)
 	}
-	for _, env := range os.Environ() {
-		if !strings.HasPrefix(env, EnvTestLabelPrefix) {
+	for _, kv := range os.Environ() {
+		if !strings.HasPrefix(kv, env.TestLabelPrefix) {
 			continue
 		}
-		kv := strings.SplitN(env, "=", 2)
-		r.Labels[strings.TrimPrefix(kv[0], EnvTestLabelPrefix)] = kv[1]
+		kv := strings.SplitN(kv, "=", 2)
+		r.Labels[strings.TrimPrefix(kv[0], env.TestLabelPrefix)] = kv[1]
 	}
 }
 
 func makeURL(path string) string {
-	if len(testStoreEndpoint) > 0 {
-		return testStoreEndpoint + path
+	if len(TestResultEndpoint) > 0 {
+		return TestResultEndpoint + path
 	}
-	endpoint := os.Getenv(EnvTestStoreEndpoint)
+	endpoint := env.Get(env.TestResultEndpoint)
 	if len(endpoint) == 0 {
 		return ""
 	}

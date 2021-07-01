@@ -1,25 +1,21 @@
 package result
 
 import (
-	"net/http"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/zyguan/tidb-test-util/pkg/env"
 )
 
-var (
-	testStoreEndpoint = ""
-	client            = http.DefaultClient
-	defaultResult     *Result
-)
+var defaultResult *Result
 
 func InitDefault() (*Result, error) {
 	if defaultResult != nil {
 		return defaultResult, nil
 	}
-	if id, ok := os.LookupEnv(EnvTestResultID); ok {
+	if id, ok := os.LookupEnv(env.TestResultID); ok {
 		r, err := Get(id)
 		if err != nil {
 			return nil, err
@@ -27,7 +23,7 @@ func InitDefault() (*Result, error) {
 		defaultResult = r
 		return defaultResult, nil
 	}
-	name, ok := os.LookupEnv(EnvTestName)
+	name, ok := os.LookupEnv(env.TestName)
 	if !ok {
 		name = "test-" + strconv.FormatInt(time.Now().UnixNano(), 10)
 	}
