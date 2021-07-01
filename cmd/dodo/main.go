@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
-	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/zyguan/tidb-test-util/cmd/stmtflow/command"
+	"github.com/zyguan/tidb-test-util/cmd/dodo/command"
 )
 
 var (
@@ -15,12 +13,9 @@ var (
 	BuildTime = "unknown"
 )
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 func main() {
-	cmd := command.Root()
+	cmd := command.FileServer()
+	cmd.Use = "dodo"
 	cmd.AddCommand(&cobra.Command{
 		Use:   "version",
 		Short: "Show version information",
