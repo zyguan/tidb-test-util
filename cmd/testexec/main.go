@@ -28,8 +28,8 @@ func command() (*exec.Cmd, *os.File) {
 		f, err := os.OpenFile(outPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 		if err == nil {
 			out = f
-			cmd.Stdout = out
-			cmd.Stderr = out
+			cmd.Stdout = io.MultiWriter(cmd.Stdout, out)
+			cmd.Stderr = io.MultiWriter(cmd.Stderr, out)
 		} else {
 			log.Warnw("failed to open out file", "path", outPath, "error", err)
 		}
