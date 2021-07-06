@@ -6,7 +6,7 @@ LDFLAGS += -X "main.BuildTime=$(shell date -u '+%Y-%m-%dT%H:%M:%S')"
 
 .PHONY: FORCE build clean test test-all
 
-build: bin/dodo bin/stmtflow bin/klogdump
+build: bin/dodo bin/stmtflow bin/klogdump bin/testexec
 
 clean:
 	@rm -rfv bin

@@ -217,19 +217,41 @@ func NewGLogEncoder(cfg zapcore.EncoderConfig) zapcore.Encoder {
 	}
 }
 
-func NewGLogDevConfig() zap.Config {
-	return zap.Config{
-		Level:            zap.NewAtomicLevelAt(zap.DebugLevel),
-		Development:      true,
-		Encoding:         "glog",
-		EncoderConfig:    zap.NewDevelopmentEncoderConfig(),
+func NewGLogConfig(dev bool) zap.Config {
+	cfg := zap.Config{
+		Level:       zap.NewAtomicLevelAt(zap.InfoLevel),
+		Development: false,
+		Encoding:    "glog",
+		EncoderConfig: zapcore.EncoderConfig{
+			TimeKey:        "ts",
+			LevelKey:       "level",
+			NameKey:        "logger",
+			CallerKey:      "caller",
+			FunctionKey:    zapcore.OmitKey,
+			MessageKey:     "msg",
+			StacktraceKey:  "stack",
+			LineEnding:     zapcore.DefaultLineEnding,
+			EncodeLevel:    zapcore.CapitalLevelEncoder,
+			EncodeTime:     zapcore.ISO8601TimeEncoder,
+			EncodeDuration: zapcore.StringDurationEncoder,
+			EncodeCaller:   zapcore.ShortCallerEncoder,
+		},
 		OutputPaths:      []string{"stderr"},
 		ErrorOutputPaths: []string{"stderr"},
 	}
+	if dev {
+		cfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+		cfg.Development = true
+	}
+	return cfg
+}
+
+func NewGLog(options ...zap.Option) (*zap.Logger, error) {
+	return NewGLogConfig(false).Build(options...)
 }
 
 func NewGLogDev(options ...zap.Option) (*zap.Logger, error) {
-	return NewGLogDevConfig().Build(options...)
+	return NewGLogConfig(true).Build(options...)
 }
 
 func init() {
