@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -51,13 +52,15 @@ func main() {
 			fmt.Printf("%s@%s (%s)\n", filepath.Base(os.Args[0]), Version, BuildTime)
 			os.Exit(0)
 		} else {
-			fmt.Fprintf(flag.CommandLine.Output(), "Unknown command %q.\n", action)
+			flag.Usage()
 			os.Exit(1)
 		}
 	case 3:
 		kind, name, output = flag.Arg(0), flag.Arg(1), flag.Arg(2)
 	case 5:
-		owner, output = flag.Arg(3), flag.Arg(4)
+		if reflect.DeepEqual(flag.Args()[:3], []string{"tidbs", "owned", "by"}) {
+			owner, output = flag.Arg(3), flag.Arg(4)
+		}
 	default:
 		flag.Usage()
 		os.Exit(1)
@@ -75,7 +78,7 @@ func main() {
 	} else if kind == "pod" {
 		err = kube.DumpLog(ctx, filepath.Join(output, name+".log"), cli, namespace, name, container, kube.ReadLogOptions{})
 	} else {
-		fmt.Fprintf(flag.CommandLine.Output(), "Unknown action: %q.\n", strings.Join(flag.Args(), " "))
+		flag.Usage()
 		os.Exit(1)
 	}
 	if err != nil {
