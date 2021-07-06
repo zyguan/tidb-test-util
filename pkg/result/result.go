@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,13 +23,39 @@ var (
 type Conclusion string
 
 const (
-	Unknown  Conclusion = "unknown"
-	Success  Conclusion = "success"
-	Failure  Conclusion = "failure"
-	Canceled Conclusion = "canceled"
-	TimedOut Conclusion = "timed_out"
-	Skipped  Conclusion = "skipped"
+	Unknown   Conclusion = "unknown"
+	Success   Conclusion = "success"
+	Failure   Conclusion = "failure"
+	Skipped   Conclusion = "skipped"
+	TimedOut  Conclusion = "timed_out"
+	Cancelled Conclusion = "cancelled"
 )
+
+func ExitConclusion(code int, optDefault ...Conclusion) Conclusion {
+	m := map[string]Conclusion{
+		"0": Success,
+		"1": Failure,
+		"2": Failure,
+		"3": Skipped,
+		"4": TimedOut,
+		"5": Cancelled,
+	}
+	s, ok := os.LookupEnv(env.TestExitConclusion)
+	if ok {
+		err := json.Unmarshal([]byte(s), &m)
+		if err != nil {
+			log.Warnw("invalid exit conclusion", "value", s, "error", err)
+		}
+	}
+	c, ok := m[strconv.Itoa(code)]
+	if !ok {
+		if len(optDefault) > 0 {
+			return optDefault[0]
+		}
+		return Failure
+	}
+	return c
+}
 
 type Result struct {
 	ID          string            `json:"id,omitempty"`
@@ -87,7 +114,7 @@ func (r *Result) Report(conclusion Conclusion, output string) error {
 	err := r.Update()
 	if err != nil {
 		if isEmptyEndpointError(err) {
-			log.Warnw("cannot report to an empty endpoint", "error", err)
+			log.Warnw("cannot report result", "error", err)
 		} else {
 			log.Errorw("failed to update result", "result", r, "error", err)
 		}

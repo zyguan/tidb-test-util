@@ -20,7 +20,17 @@ func Use(l *zap.Logger) {
 }
 
 func UseGLog(options ...zap.Option) {
+	log, _ := NewGLog(options...)
+	Use(log)
+}
+
+func UseGLogDev(options ...zap.Option) {
 	log, _ := NewGLogDev(options...)
+	Use(log)
+}
+
+func UseProduction(options ...zap.Option) {
+	log, _ := zap.NewProduction(options...)
 	Use(log)
 }
 
