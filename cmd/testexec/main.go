@@ -23,15 +23,15 @@ func command() (*exec.Cmd, *os.File) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	var out *os.File
-	if logPath := env.Get(env.TestLogFile); len(logPath) > 0 {
-		os.MkdirAll(filepath.Base(logPath), 0755)
-		f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if outPath := env.Get(env.TestOutput); len(outPath) > 0 {
+		os.MkdirAll(filepath.Base(outPath), 0755)
+		f, err := os.OpenFile(outPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 		if err == nil {
 			out = f
-			cmd.Stdout = io.MultiWriter(cmd.Stdout, out)
-			cmd.Stderr = io.MultiWriter(cmd.Stderr, out)
+			cmd.Stdout = out
+			cmd.Stderr = out
 		} else {
-			log.Warnw("failed to open log file", "path", logPath, "error", err)
+			log.Warnw("failed to open out file", "path", outPath, "error", err)
 		}
 	}
 	return cmd, out
@@ -62,13 +62,14 @@ func main() {
 		fmt.Fprintf(os.Stderr, "USAGE: %s <command> [args]\n", filepath.Base(os.Args[0]))
 		os.Exit(2)
 	}
-	log.Infow("test executor", "version", Version, "build-time", BuildTime)
+	log.Infow("test executor", "version", Version, "build-time", BuildTime, "result-store", env.Get(env.TestResultEndpoint))
 	r, err := result.InitDefault()
 	if err != nil {
 		log.Warnw("failed init default result", "error", err)
 	}
 	cmd, out := command()
 	exitCode := 0
+	log.Infow("run test command", "cmd", cmd.String(), "env", env.ListTestVars())
 	if err = cmd.Run(); err != nil {
 		if ee, ok := err.(*exec.ExitError); ok {
 			exitCode = ee.ExitCode()

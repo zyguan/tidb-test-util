@@ -68,3 +68,13 @@ func GetBool(name string, optDefault ...bool) bool {
 	}
 	return false
 }
+
+func ListTestVars() []string {
+	var lst []string
+	for _, kv := range os.Environ() {
+		if strings.HasPrefix(kv, "TEST_") {
+			lst = append(lst, kv)
+		}
+	}
+	return lst
+}
