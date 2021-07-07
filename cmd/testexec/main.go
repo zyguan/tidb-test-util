@@ -23,8 +23,11 @@ func command() (*exec.Cmd, *os.File) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	var out *os.File
-	if outPath := env.Get(env.TestOutput); len(outPath) > 0 {
-		os.MkdirAll(filepath.Base(outPath), 0755)
+	if outPath := env.Get(env.TestLogFile); len(outPath) > 0 {
+		err := os.MkdirAll(filepath.Dir(outPath), 0755)
+		if err != nil {
+			log.Warnw("failed to directory for log file", "path", outPath, "error", err)
+		}
 		f, err := os.OpenFile(outPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 		if err == nil {
 			out = f
