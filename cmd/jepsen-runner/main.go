@@ -49,6 +49,8 @@ var global struct {
 }
 
 func init() {
+	log.UseGLog()
+
 	pflag.StringVar(&global.name, "name", "jepsen", "")
 	pflag.StringVar(&global.namespace, "namespace", kube.DefaultNamespace(), "")
 	pflag.StringVar(&global.owner, "owner", "", "")
