@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -130,15 +131,41 @@ func GetFile(ctx context.Context, cli *Client, namespace string, name string, co
 	return r, nil
 }
 
-func DumpFile(ctx context.Context, logFile string, cli *Client, namespace string, name string, container string, path string) error {
+func GetTarball(ctx context.Context, cli *Client, namespace string, name string, container string, path string) (io.ReadCloser, error) {
+	r, w := io.Pipe()
+	go func() {
+		err := Exec(ctx, cli, namespace, name, container, ExecOptions{Command: []string{"tar", "-zcO", path}, Stdout: w})
+		if err != nil {
+			w.CloseWithError(err)
+		}
+		w.Close()
+	}()
+	return r, nil
+}
+
+func DumpFile(ctx context.Context, file string, cli *Client, namespace string, name string, container string, path string) error {
 	r, err := GetFile(ctx, cli, namespace, name, container, path)
 	if err != nil {
 		log.Warnw("read container file", "namespace", namespace, "name", name, "container", container, "path", path, "error", err)
 		return err
 	}
-	err = fs.DumpStream(logFile, r)
+	err = fs.DumpStream(file, r)
 	if err != nil {
 		log.Warnw("dump container file", "namespace", namespace, "name", name, "container", container, "path", path, "error", err)
+		return err
+	}
+	return nil
+}
+
+func DumpTarball(ctx context.Context, file string, cli *Client, namespace string, name string, container string, path string) error {
+	r, err := GetTarball(ctx, cli, namespace, name, container, path)
+	if err != nil {
+		log.Warnw("read container tarball", "namespace", namespace, "name", name, "container", container, "path", path, "error", err)
+		return err
+	}
+	err = fs.DumpStream(file, r)
+	if err != nil {
+		log.Warnw("dump container tarball", "namespace", namespace, "name", name, "container", container, "path", path, "error", err)
 		return err
 	}
 	return nil
@@ -147,11 +174,7 @@ func DumpFile(ctx context.Context, logFile string, cli *Client, namespace string
 func ListFiles(ctx context.Context, cli *Client, namespace string, name string, container string, path string) ([]string, error) {
 	stdout, stderr, err := ExecWithOutput(ctx, cli, namespace, name, container, false, "ls", "-a", path)
 	if err != nil {
-		errmsg := err.Error()
-		if len(stderr) > 0 {
-			errmsg += ": " + stderr
-		}
-		return nil, errors.New(errmsg)
+		return nil, wrapExecError(err, stderr)
 	}
 	all := strings.Split(stdout, "\n")
 	selected := make([]string, 0, len(all))
@@ -162,4 +185,27 @@ func ListFiles(ctx context.Context, cli *Client, namespace string, name string, 
 		selected = append(selected, f)
 	}
 	return selected, nil
+}
+
+func GetUserID(ctx context.Context, cli *Client, namespace string, name string, container string) (int, error) {
+	stdout, stderr, err := ExecWithOutput(ctx, cli, namespace, name, container, false, "id", "-u")
+	if err != nil {
+		return 0, wrapExecError(err, stderr)
+	}
+	uid, err := strconv.Atoi(strings.TrimSpace(stdout))
+	if err != nil {
+		return 0, errors.Errorf("invalid uid: %q", stdout)
+	}
+	return uid, nil
+}
+
+func wrapExecError(err error, stderr string) error {
+	if err == nil {
+		return nil
+	}
+	errmsg := err.Error()
+	if len(stderr) > 0 {
+		errmsg += ": " + stderr
+	}
+	return errors.New(errmsg)
 }
