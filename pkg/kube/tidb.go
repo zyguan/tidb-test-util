@@ -2,6 +2,7 @@ package kube
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -70,6 +71,9 @@ func DumpTiDBLogs(ctx context.Context, logDir string, cli *Client, namespace str
 	if err != nil {
 		return err
 	}
+	if len(pods) == 0 {
+		return errors.New("no pod found for " + namespace + "/" + name)
+	}
 
 	for _, pod := range pods {
 		component := pod.Labels["app.kubernetes.io/component"]
@@ -90,6 +94,13 @@ func DumpTiDBLogs(ctx context.Context, logDir string, cli *Client, namespace str
 			if dumpLog {
 				DumpLog(ctx, filepath.Join(logDir, pod.Name, component+".log"), cli, namespace, pod.Name, component, ReadLogOptions{})
 			}
+		}
+		if component == "tidb" {
+			uid, err := GetUserID(ctx, cli, namespace, pod.Name, component)
+			if err != nil {
+				continue
+			}
+			DumpTarball(ctx, filepath.Join(logDir, pod.Name, "tmp-storage.tar.gz"), cli, namespace, pod.Name, component, fmt.Sprintf("/tmp/%d_tidb", uid))
 		}
 	}
 	return nil
