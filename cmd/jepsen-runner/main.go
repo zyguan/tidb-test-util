@@ -113,11 +113,15 @@ func (j *Job) output(ctx context.Context, t Test, r result.Conclusion, start int
 	return buf.String()
 }
 
-func (j *Job) run(ctx context.Context) {
+func (j *Job) run(ctx context.Context) bool {
+	ok := true
 	for _, t := range j.Tests {
 		log.Infof("[%s] start", t.Name)
 		r := result.New(fmt.Sprintf("%s::%s", j.Name, t.Name), nil)
 		c := t.run(ctx)
+		if ok && c != result.Success {
+			ok = false
+		}
 		log.Infof("[%s] %v", t.Name, c)
 		output := j.output(ctx, t, c, r.StartedAt, time.Now().Unix())
 		if len(j.ReportTo) > 0 {
@@ -136,6 +140,7 @@ func (j *Job) run(ctx context.Context) {
 			break
 		}
 	}
+	return ok
 }
 
 func (t *Test) run(ctx context.Context) result.Conclusion {
@@ -339,7 +344,9 @@ func runJob(ctx context.Context) {
 	log.Info("job spec: " + string(rawJob))
 	log.Info("runtime labels: " + string(try(json.Marshal(global.labels)).([]byte)))
 	try(json.Unmarshal(rawJob, &job))
-	job.run(ctx)
+	if !job.run(ctx) {
+		os.Exit(1)
+	}
 }
 
 func try(xs ...interface{}) interface{} {
