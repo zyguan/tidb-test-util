@@ -25,22 +25,28 @@ func (fs *Client) WhereIsComponent(name string, ref string) string {
 	if fs.Exists(remote) {
 		return remote
 	}
-	if name == "tiflash" || name == "br" {
-		for _, branch := range ReleaseBranches {
-			remote = fmt.Sprintf("builds/pingcap/%s/%s/%s/centos7/%s", name, branch, ref, file)
-			if fs.Exists(remote) {
-				return remote
-			}
-		}
-	}
 
 	if !isCommit(ref) {
-		refBytes, err := fs.ReadAll(fmt.Sprintf("refs/pingcap/%s/%s/sha1", name, ref))
+		sha1Path := ""
+		switch name {
+		case "tiflash":
+			sha1Path = fmt.Sprintf("refs/pingcap/tics/%s/sha1", ref)
+		default:
+			sha1Path = fmt.Sprintf("refs/pingcap/%s/%s/sha1", name, ref)
+		}
+		refBytes, err := fs.ReadAll(sha1Path)
 		if err != nil {
 			return ""
 		}
 		if ref := strings.TrimSpace(string(refBytes)); len(ref) > 0 {
 			return fs.WhereIsComponent(name, ref)
+		}
+	} else if name == "tiflash" || name == "br" {
+		for _, branch := range ReleaseBranches {
+			remote = fmt.Sprintf("builds/pingcap/%s/%s/%s/centos7/%s", name, branch, ref, file)
+			if fs.Exists(remote) {
+				return remote
+			}
 		}
 	}
 
