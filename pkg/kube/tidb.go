@@ -32,6 +32,8 @@ func DiscoverTiDBLogFiles(ctx context.Context, cli *Client, namespace string, na
 			dirs = []string{"/var/lib/tikv/tikvlog", "/var/lib/tikv"}
 		case "pd":
 			dirs = []string{"/var/log/pdlog", "/var/lib/pd"}
+		case "tiflash":
+			dirs = []string{"/data0/logs"}
 		}
 	}
 	var lst []string
