@@ -9,23 +9,13 @@ import (
 func TestWhereIsComponent(t *testing.T) {
 	cli := Default()
 	// no need to auth for `whereis`
-
-	for _, tt := range []struct {
-		name string
-		ref  string
-	}{
-		{"tidb", "master"},
-		{"tikv", "master"},
-		{"pd", "master"},
-		{"br", "master"},
-		{"ticdc", "master"},
-		{"tiflash", "master"},
-		{"tidb-lightning", "master"},
-	} {
-		t.Run(tt.name, func(t *testing.T) {
-			url := cli.WhereIsComponent(tt.name, tt.ref)
-			assert.NotEmpty(t, url)
-			t.Log(t.Name(), url)
-		})
+	for _, name := range []string{"tidb", "tikv", "pd", "br", "ticdc", "tiflash", "tidb-lightning"} {
+		for _, branch := range []string{"master", "release-5.2", "release-5.1", "release-4.0"} {
+			t.Run(name+"-"+branch, func(t *testing.T) {
+				url := cli.WhereIsComponent(name, branch)
+				assert.NotEmpty(t, url)
+				t.Log(t.Name(), url)
+			})
+		}
 	}
 }
