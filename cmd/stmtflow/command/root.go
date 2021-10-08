@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/zyguan/sqlz/stmtflow"
+	"github.com/zyguan/tidb-test-util/pkg/stmtflow"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -48,7 +48,7 @@ func Root() *cobra.Command {
 			return cmd.Help()
 		},
 	}
-	cmd.PersistentFlags().StringVar(&opts.DSN, "dsn", "root:@tcp(127.0.0.1:3306)/test", "data source name")
+	cmd.PersistentFlags().StringVar(&opts.DSN, "dsn", "root:@tcp(127.0.0.1:4000)/test", "data source name")
 	cmd.PersistentFlags().DurationVar(&opts.Timeout, "timeout", 60*time.Second, "timeout for a single test")
 	cmd.PersistentFlags().DurationVar(&opts.PingTime, "ping-time", 200*time.Millisecond, "max wait time to ping a blocked statement")
 	cmd.PersistentFlags().DurationVar(&opts.BlockTime, "block-time", 9*time.Second, "max time to wait a newly submitted statement")

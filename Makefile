@@ -18,6 +18,7 @@ test-all:
 	go test -v ./pkg/...
 
 bin/%: FORCE
+	cd ./cmd/$* && $(GO) mod tidy
 	cd ./cmd/$* && $(GO) build -o ../../$@ -ldflags '$(LDFLAGS)' ./
 
 upload-%: bin/%

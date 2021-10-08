@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 
 	. "github.com/google/go-jsonnet"
-	. "github.com/zyguan/sqlz/stmtflow"
+	. "github.com/zyguan/tidb-test-util/pkg/stmtflow"
 )
 
 const srcExpect = `# eval expect function
