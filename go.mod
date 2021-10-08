@@ -8,8 +8,9 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
-	github.com/zyguan/sqlz v0.0.0-20211008174751-703b7755397e
+	github.com/zyguan/sqlz v0.0.0-20211008183028-44ff42cf1df2
 	go.uber.org/zap v1.18.1
+	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	k8s.io/api v0.20.0
 	k8s.io/apimachinery v0.20.0
 	k8s.io/client-go v0.20.0
