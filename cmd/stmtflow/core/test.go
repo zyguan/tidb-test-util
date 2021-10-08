@@ -4,34 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	stderr "errors"
-	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
-	"github.com/zyguan/sqlz/resultset"
 
 	. "github.com/google/go-jsonnet"
-	. "github.com/zyguan/sqlz/stmtflow"
+	. "github.com/zyguan/tidb-test-util/pkg/stmtflow"
 )
 
 var (
 	ErrNotAsserted = stderr.New("no assertion")
-
-	digestOptions = resultset.DigestOptions{
-		Mapper: func(i int, j int, raw []byte, def resultset.ColumnDef) []byte {
-			// ref https://github.com/go-sql-driver/mysql/blob/master/fields.go
-			if def.Type != "FLOAT" && def.Type != "DOUBLE" {
-				return raw
-			}
-			f, err := strconv.ParseFloat(string(raw), 10)
-			if err != nil {
-				return raw
-			}
-			return []byte(fmt.Sprintf("%.6f", f))
-		},
-	}
 )
 
 type Assertion interface {
@@ -126,7 +109,7 @@ func (a *matchHistory) Assert(actual History) error {
 		return errors.Errorf("expect %d events, got %d", len(a.expect), len(actual))
 	}
 	for i := range a.expect {
-		if ok, msg := a.expect[i].EqualTo(actual[i], digestOptions); !ok {
+		if ok, msg := a.expect[i].EqualTo(actual[i], DefaultDigestOptions); !ok {
 			return errors.Errorf("event#%d mismatch: %s", i, msg)
 		}
 	}

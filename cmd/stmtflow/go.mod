@@ -8,7 +8,7 @@ require (
 	github.com/google/go-jsonnet v0.17.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.3
-	github.com/zyguan/sqlz v0.0.0-20210702074845-cb7f5edb825c
+	github.com/zyguan/tidb-test-util v0.0.0-00010101000000-000000000000
 )
 
-// replace github.com/zyguan/sqlz => ../../../sqlz
+replace github.com/zyguan/tidb-test-util => ../..

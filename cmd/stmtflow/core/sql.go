@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	. "github.com/zyguan/sqlz/stmtflow"
+	. "github.com/zyguan/tidb-test-util/pkg/stmtflow"
 )
 
 var re = regexp.MustCompile(`^/\*\s*(\w+)(:[\w,]+)?\s*\*/\s+(.*);.*$`)
@@ -29,6 +29,8 @@ func ParseSQL(r io.Reader) []Stmt {
 			switch strings.ToLower(m) {
 			case "wait":
 				flags |= S_WAIT
+			case "query":
+				flags |= S_QUERY
 			case "unordered":
 				flags |= S_UNORDERED
 			}

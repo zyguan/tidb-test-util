@@ -11,8 +11,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/zyguan/sqlz/stmtflow"
 	"github.com/zyguan/tidb-test-util/cmd/stmtflow/core"
+	"github.com/zyguan/tidb-test-util/pkg/stmtflow"
 )
 
 type testOptions struct {
