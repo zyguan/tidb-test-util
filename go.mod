@@ -15,4 +15,4 @@ require (
 	k8s.io/client-go v0.20.0
 )
 
-replace github.com/zyguan/sqlz => ../sqlz
+//replace github.com/zyguan/sqlz => ../sqlz
