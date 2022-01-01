@@ -173,29 +173,16 @@ func (fs *Client) GetFile(remote string, local string) error {
 	return nil
 }
 
-func (fs *Client) PutFile(remote string, local SizedReader, force bool) error {
-	if fs.Exists(remote+ExtPartial) && !force {
-		return fmt.Errorf("skip upload because %s exists", remote+ExtPartial)
-	}
-	fs.DelFile(remote, force)
-
-	hash, err := fs.Write(remote+ExtPartial, local)
+func (fs *Client) PutFile(remote string, local SizedReader) error {
+	hash, err := fs.Write(remote, local)
 	if err != nil {
 		return err
-	}
-	info, err := fs.Stat(remote+ExtPartial, true)
-	if err != nil {
-		return err
-	}
-	if info.Checksum.SHA256 != hash {
-		return fmt.Errorf("checksum mismatch: expect %s but got %s", hash, info.Checksum.SHA256)
 	}
 	_, err = fs.Write(remote+ExtChecksum, String(hash))
 	if err != nil {
 		return err
 	}
-
-	return fs.Rename(remote+ExtPartial, remote)
+	return nil
 }
 
 func (fs *Client) DelFile(remote string, unsafe bool) error {

@@ -40,25 +40,7 @@ func TestPutGetDelFile(t *testing.T) {
 	require.NoError(t, err)
 	defer f.Close()
 
-	require.NoError(t, cli.PutFile(testFile+ExtPartial, File(f), true))
-
-	// partial file exists
-	_, err = f.Seek(0, 0)
-	require.NoError(t, err)
-	require.Error(t, cli.PutFile(testFile, File(f), false))
-
-	// partial file exists but force write it
-	_, err = f.Seek(0, 0)
-	require.NoError(t, err)
-	require.NoError(t, cli.PutFile(testFile, File(f), true))
-
-	// partial file has been deleted by force write
-	_, err = f.Seek(0, 0)
-	require.NoError(t, err)
-	require.NoError(t, cli.PutFile(testFile, File(f), false))
-
+	require.NoError(t, cli.PutFile(testFile, File(f)))
 	require.NoError(t, cli.GetFile(testFile, filepath.Join(tempDir, t.Name())))
-
 	require.NoError(t, cli.DelFile(testFile, false))
-	require.NoError(t, cli.Delete(testFile+ExtPartial+ExtChecksum))
 }

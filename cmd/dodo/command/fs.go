@@ -91,9 +91,6 @@ func fsGet(cli *fs.Client) *cobra.Command {
 }
 
 func fsPut(cli *fs.Client) *cobra.Command {
-	var opts struct {
-		Force bool
-	}
 	cmd := &cobra.Command{
 		Use:           "put <remote> <local>",
 		Short:         "Upload a file",
@@ -112,7 +109,7 @@ func fsPut(cli *fs.Client) *cobra.Command {
 				return errors.New("cannot upload a directory yet")
 			}
 			fmt.Fprintf(os.Stderr, "uploading to %s ...\n", remote)
-			err = cli.PutFile(remote, fs.File(f), opts.Force)
+			err = cli.PutFile(remote, fs.File(f))
 			if err != nil {
 				return err
 			}
@@ -120,7 +117,6 @@ func fsPut(cli *fs.Client) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "force upload")
 
 	return cmd
 }
