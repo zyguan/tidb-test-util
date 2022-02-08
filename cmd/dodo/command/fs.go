@@ -81,7 +81,7 @@ func fsGet(cli *fs.Client) *cobra.Command {
 			remote := args[0]
 			local := filepath.Base(remote)
 			if len(args) > 1 {
-				local = args[2]
+				local = args[1]
 			}
 			fmt.Fprintf(os.Stderr, "downloading from %s ...\n", cli.DownloadURL(remote))
 			return cli.GetFile(remote, local)
