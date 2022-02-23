@@ -9,4 +9,15 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Build
-      run: make upload-dodo upload-jepsen-runner upload-klogdump upload-stmtflow upload-testexec
+      env:
+        MINIO_URL: http://minio.pingcap.net:9000
+        MINIO_CLIENT: bin/mc
+        MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+        MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+        MINIO_UPLOAD_PATH: idc/tp-team/tools
+      run: |
+        mkdir -p bin
+        curl -o $MINIO_CLIENT $MINIO_URL/tp-team/tools/mc
+        chmod +x $MINIO_CLIENT
+        $MINIO_CLIENT config host add idc $MINIO_URL $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
+        make upload-stmtflow
