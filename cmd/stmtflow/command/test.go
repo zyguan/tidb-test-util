@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/zyguan/tidb-test-util/cmd/stmtflow/core"
@@ -142,5 +143,20 @@ func validateTiDBVersion(db *sql.DB, test core.Test) error {
 	if strings.HasPrefix(ver, verPrefix) {
 		ver = ver[len(verPrefix):]
 	}
-	return test.ValidateVersion(ver)
+	vv, err := semver.NewVersion(ver)
+	if err != nil {
+		return errors.Wrap(err, "invalid version")
+	}
+	v := *vv
+	if len(v.Prerelease()) > 0 {
+		// CI doesn't set server-version according to the semver spec. For example, if
+		// the last release version of release-5.3 is v5.3.4, then the nightly version
+		// of the branch should be v5.3.5-nightly, however it's set to v5.3.0-nightly
+		// instead. Thus we have to call `IncPatch` many times to ensure the nightly
+		// version (v5.3.0-nightly) matches version constraints like `>= v5.3.2`.
+		for v.Patch() < 99 {
+			v = v.IncPatch()
+		}
+	}
+	return test.ValidateVersion(v.String())
 }
