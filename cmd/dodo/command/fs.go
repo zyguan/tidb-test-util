@@ -21,40 +21,43 @@ const (
 	EnvFSFBPass = "DODO_FS_FBPASS"
 )
 
+func updateFBToken(cli *fs.Client) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		if v := os.Getenv(EnvFSHost); len(v) > 0 {
+			cli.Host = v
+		}
+		if v := os.Getenv(EnvFSFBHost); len(v) > 0 {
+			cli.FBHost = v
+		}
+		if v := os.Getenv(EnvFSFBUser); len(v) > 0 {
+			cli.FBUser = v
+		}
+		if v := os.Getenv(EnvFSFBPass); len(v) > 0 {
+			cli.FBPass = v
+		}
+		if v := os.Getenv(EnvFSPort); len(v) > 0 {
+			p, err := strconv.Atoi(v)
+			if err != nil {
+				return fmt.Errorf("invalid port: %v", err)
+			}
+			cli.Port = p
+		}
+		if v := os.Getenv(EnvFSFBPort); len(v) > 0 {
+			p, err := strconv.Atoi(v)
+			if err != nil {
+				return fmt.Errorf("invalid port: %v", err)
+			}
+			cli.FBPort = p
+		}
+		return cli.Auth()
+	}
+}
+
 func FileServer() *cobra.Command {
 	cli := fs.Default()
 	cmd := &cobra.Command{
 		Use:   "fs",
 		Short: "File server utils",
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if v := os.Getenv(EnvFSHost); len(v) > 0 {
-				cli.Host = v
-			}
-			if v := os.Getenv(EnvFSFBHost); len(v) > 0 {
-				cli.FBHost = v
-			}
-			if v := os.Getenv(EnvFSFBUser); len(v) > 0 {
-				cli.FBUser = v
-			}
-			if v := os.Getenv(EnvFSFBPass); len(v) > 0 {
-				cli.FBPass = v
-			}
-			if v := os.Getenv(EnvFSPort); len(v) > 0 {
-				p, err := strconv.Atoi(v)
-				if err != nil {
-					return fmt.Errorf("invalid port: %v", err)
-				}
-				cli.Port = p
-			}
-			if v := os.Getenv(EnvFSFBPort); len(v) > 0 {
-				p, err := strconv.Atoi(v)
-				if err != nil {
-					return fmt.Errorf("invalid port: %v", err)
-				}
-				cli.FBPort = p
-			}
-			return cli.Auth()
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -126,12 +129,13 @@ func fsDel(cli *fs.Client) *cobra.Command {
 		Force bool
 	}
 	cmd := &cobra.Command{
-		Use:           "del <remote>",
-		Short:         "Delete a file or directory",
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Hidden:        true,
-		Args:          cobra.ExactArgs(1),
+		Use:                "del <remote>",
+		Short:              "Delete a file or directory",
+		SilenceUsage:       true,
+		SilenceErrors:      true,
+		Hidden:             true,
+		Args:               cobra.ExactArgs(1),
+		PersistentPostRunE: updateFBToken(cli),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			remote := args[0]
 			info, err := cli.Stat(remote, false)
@@ -168,11 +172,12 @@ func fsMove(cli *fs.Client) *cobra.Command {
 		IgnoreChecksum bool
 	}
 	cmd := &cobra.Command{
-		Use:           "mv <src> <dst>",
-		Short:         "Move a file or directory",
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Args:          cobra.ExactArgs(2),
+		Use:                "mv <src> <dst>",
+		Short:              "Move a file or directory",
+		SilenceUsage:       true,
+		SilenceErrors:      true,
+		Args:               cobra.ExactArgs(2),
+		PersistentPostRunE: updateFBToken(cli),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			src, dst := args[0], args[1]
 			info, err := cli.Stat(src, false)
@@ -210,11 +215,12 @@ func fsCopy(cli *fs.Client) *cobra.Command {
 		IgnoreChecksum bool
 	}
 	cmd := &cobra.Command{
-		Use:           "cp <src> <dst>",
-		Short:         "Copy a file or directory",
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Args:          cobra.ExactArgs(2),
+		Use:                "cp <src> <dst>",
+		Short:              "Copy a file or directory",
+		SilenceUsage:       true,
+		SilenceErrors:      true,
+		Args:               cobra.ExactArgs(2),
+		PersistentPostRunE: updateFBToken(cli),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			src, dst := args[0], args[1]
 			info, err := cli.Stat(src, false)
@@ -251,11 +257,12 @@ func fsStat(cli *fs.Client) *cobra.Command {
 		OutFmt string
 	}
 	cmd := &cobra.Command{
-		Use:           "stat <path>",
-		Short:         "Show file info",
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Args:          cobra.ExactArgs(1),
+		Use:                "stat <path>",
+		Short:              "Show file info",
+		SilenceUsage:       true,
+		SilenceErrors:      true,
+		Args:               cobra.ExactArgs(1),
+		PersistentPostRunE: updateFBToken(cli),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path := args[0]
 			info, err := cli.Stat(path, false)
