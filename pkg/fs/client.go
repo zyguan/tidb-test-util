@@ -154,6 +154,11 @@ func (fs *Client) GetFile(remote string, local string) error {
 	}
 	checksum, err := fs.ReadAll(remote + ExtChecksum)
 	if err != nil {
+		r, err := fs.Read(remote)
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(f, r)
 		return err
 	}
 	r, err := fs.Read(remote)
