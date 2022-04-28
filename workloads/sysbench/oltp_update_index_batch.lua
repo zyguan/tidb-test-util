@@ -6,6 +6,11 @@ sysbench.cmdline.options.batch_size = {
     'Size of batch queries', 10}
 
 function prepare_statements()
+    if not sysbench.opt.skip_trx then
+        prepare_begin()
+        prepare_commit()
+    end
+
     local xs = {}
     for i = 1, sysbench.opt.batch_size do table.insert(xs, "?") end
     local stmt_pattern = "UPDATE sbtest%u SET k=k+1 WHERE id in ("..table.concat(xs, ",")..")"
