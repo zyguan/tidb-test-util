@@ -31,7 +31,7 @@ function event()
 
     local tnum = sysbench.rand.uniform(1, sysbench.opt.tables)
     for i = 1, sysbench.opt.batch_index_updates do
-        for j = 1, 10 do
+        for j = 1, sysbench.opt.batch_size do
             param[tnum].update_index_batch[j]:set(sysbench.rand.default(1, sysbench.opt.table_size))
         end
         stmt[tnum].update_index_batch:execute()
