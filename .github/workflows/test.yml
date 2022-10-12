@@ -23,6 +23,7 @@ jobs:
         GOARCH: ${{ matrix.arch }}
       run: make build
     - name: Test
+      if: matrix.os == 'linux' && matrix.arch == 'amd64'
       env:
         GOOS: ${{ matrix.os }}
         GOARCH: ${{ matrix.arch }}
