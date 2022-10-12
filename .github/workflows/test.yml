@@ -1,10 +1,16 @@
 name: Test
 on:
+  push:
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: ["linux", "darwin"]
+        arch: ["amd64", "arm64"]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Go
@@ -12,6 +18,25 @@ jobs:
       with:
         go-version: 1.16
     - name: Build
+      env:
+        GOOS: ${{ matrix.os }}
+        GOARCH: ${{ matrix.arch }}
       run: make build
     - name: Test
+      env:
+        GOOS: ${{ matrix.os }}
+        GOARCH: ${{ matrix.arch }}
       run: make test
+    - name: Package
+      run: |
+        tar -C bin -zcf stmtflow-${{ matrix.os }}-${{ matrix.arch }}.tar.gz stmtflow
+    - name: Release latest build
+      if: github.event_name == 'push'
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Latest Build"
+        files: |
+          *.tar.gz
