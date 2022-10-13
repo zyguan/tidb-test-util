@@ -39,7 +39,6 @@ jobs:
       with:
         name: Latest build
         tag_name: latest-${{ github.sha }}
-        prerelease: true
         files: |
           *.tar.gz
     - name: Clean legacy latest tags
@@ -53,6 +52,4 @@ jobs:
         script: |
           const { owner, repo } = context.repo;
           const releases = (await github.rest.repos.listReleases({ owner, repo })).data.filter(r => r.draft && r.tag_name.startsWith('latest'));
-          for (const r of releases) {
-            await github.rest.repos.deleteRelease({ owner, repo, release_id: r.id }).catch(_ => {});
-          }
+          for (const r of releases) { await github.rest.repos.deleteRelease({ owner, repo, release_id: r.id }).catch(_ => {}); }
