@@ -50,7 +50,7 @@ CREATE TABLE sbtest%d(
   %s (id)
 ) %s %s]],
         table_num, id_def, id_index_def, engine_def,
-        sysbench.opt.create_table_options)
+        sysbench.opt.create_table_options or '')
 
     con:query(query)
 
