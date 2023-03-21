@@ -25,6 +25,11 @@ function create_table(drv, con, table_num)
         else
             id_def = "BIGINT UNSIGNED NOT NULL"
         end
+        if sysbench.opt.clustered then
+            id_def += " /*T![clustered_index] CLUSTERED */"
+        else
+            id_def += " /*T![clustered_index] NONCLUSTERED */"
+        end
         engine_def = "/*! ENGINE = " .. sysbench.opt.mysql_storage_engine .. " */"
     elseif drv:name() == "pgsql"
     then
@@ -122,5 +127,6 @@ function cmd_insert()
 end
 
 sysbench.cmdline.options.auto_inc[2] = false
+sysbench.cmdline.options.clustered = {'Use clustered index', true}
 sysbench.cmdline.commands.create = {cmd_create, sysbench.cmdline.PARALLEL_COMMAND}
 sysbench.cmdline.commands.insert = {cmd_insert, sysbench.cmdline.PARALLEL_COMMAND}
