@@ -13,9 +13,14 @@ function create_table(drv, con, table_num)
     local query
 
     if sysbench.opt.secondary then
-        id_index_def = "KEY xid"
+        id_index_def = "KEY xid (id)"
     else
-        id_index_def = "PRIMARY KEY"
+        id_index_def = "PRIMARY KEY (id)"
+        if sysbench.opt.clustered then
+            id_index_def = id_index_def .. " /*T![clustered_index] CLUSTERED */"
+        else
+            id_index_def = id_index_def .. " /*T![clustered_index] NONCLUSTERED */"
+        end
     end
 
     if drv:name() == "mysql"
@@ -24,11 +29,6 @@ function create_table(drv, con, table_num)
             id_def = "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT"
         else
             id_def = "BIGINT UNSIGNED NOT NULL"
-        end
-        if sysbench.opt.clustered then
-            id_def = id_def .. " /*T![clustered_index] CLUSTERED */"
-        else
-            id_def = id_def .. " /*T![clustered_index] NONCLUSTERED */"
         end
         engine_def = "/*! ENGINE = " .. sysbench.opt.mysql_storage_engine .. " */"
     elseif drv:name() == "pgsql"
@@ -52,7 +52,7 @@ CREATE TABLE sbtest%d(
   k INTEGER DEFAULT '0' NOT NULL,
   c CHAR(120) DEFAULT '' NOT NULL,
   pad CHAR(60) DEFAULT '' NOT NULL,
-  %s (id)
+  %s
 ) %s %s]],
         table_num, id_def, id_index_def, engine_def,
         sysbench.opt.create_table_options or '')
