@@ -26,9 +26,9 @@ function create_table(drv, con, table_num)
             id_def = "BIGINT UNSIGNED NOT NULL"
         end
         if sysbench.opt.clustered then
-            id_def += " /*T![clustered_index] CLUSTERED */"
+            id_def = id_def .. " /*T![clustered_index] CLUSTERED */"
         else
-            id_def += " /*T![clustered_index] NONCLUSTERED */"
+            id_def = id_def .. " /*T![clustered_index] NONCLUSTERED */"
         end
         engine_def = "/*! ENGINE = " .. sysbench.opt.mysql_storage_engine .. " */"
     elseif drv:name() == "pgsql"
