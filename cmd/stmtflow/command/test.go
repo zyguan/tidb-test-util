@@ -139,13 +139,8 @@ func validateTiDBVersion(db *sql.DB, test core.Test) error {
 	if err != nil {
 		return errors.Wrap(err, "query for version")
 	}
-	const verPrefix = "5.7.25-TiDB-"
-	const verPrefix2 = "8.0.11-TiDB-"
-	if strings.HasPrefix(ver, verPrefix) {
-		ver = ver[len(verPrefix):]
-	}
-	if strings.HasPrefix(ver, verPrefix2) {
-		ver = ver[len(verPrefix2):]
+	if idx := strings.Index(ver, "-TiDB-"); idx > 0 {
+		ver = ver[idx+6:]
 	}
 	vv, err := semver.NewVersion(ver)
 	if err != nil {
